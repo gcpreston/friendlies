@@ -3,6 +3,7 @@ import { BrowserWindow, app, clipboard, dialog, ipcMain, shell } from 'electron'
 import { getCurrentUser, handleAuthCallback, isAuthenticated, logout, startAuthFlow, startLocalAuthServer } from './auth';
 import { PRESENCE_STALE_THRESHOLD } from './config';
 import { getDirectConnectService } from './direct-connect';
+import { getStreamService, STREAM_URL } from './stream';
 import { getIdentity, verifyIdentity } from './identity';
 import { getCachedGeo } from './geo-cache';
 import { resolvePresenceRow } from './presence-logic';
@@ -12,6 +13,7 @@ import { getSettings, isSetupComplete, updateSettings, type AgentSettings } from
 import { supabase } from './supabase';
 import { checkForUpdates, downloadUpdate, quitAndInstall } from './updater';
 import { backfillRecentReplays } from './watcher';
+import { BridgeEvent, DisconnectReason } from 'slippi-web-bridge';
 
 const SLIPPI_API_NAME_TO_ID: Record<string, number> = {
   CAPTAIN_FALCON: 0, DONKEY_KONG: 1, FOX: 2, MR_GAME_AND_WATCH: 3,
@@ -1347,4 +1349,28 @@ export function registerIpcHandlers(
     const service = getDirectConnectService();
     return { status: service.getStatus(), active: service.isActive() };
   });
+
+  ipcMain.handle('stream:start', () => {
+    const bridge = getStreamService();
+    bridge.connectToRelayServer(STREAM_URL);
+
+    bridge.on(BridgeEvent.SLIPPI_CONNECTED, () => {
+      console.log('Stream connected to Slippi');
+    });
+    bridge.on(BridgeEvent.RELAY_CONNECTED, (data) => {
+      const { bridge_id: bridgeId, stream_ids: [streamId] } = JSON.parse(data);
+      console.log(`Remote stream created, bridge ID: ${bridgeId}, stream ID: ${streamId}`)
+    });
+    bridge.on(BridgeEvent.DISCONNECTED, (reason: DisconnectReason) => {
+      console.log(`Stream disconnected, reason: ${reason}`)
+    });
+
+    return true;
+  });
+
+  ipcMain.handle('stream:stop', () => {
+    const bridge = getStreamService();
+    bridge.quit();
+    return true;
+  })
 }

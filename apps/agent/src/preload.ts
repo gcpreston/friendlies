@@ -102,6 +102,9 @@ const api = {
   onUnreadNudgeCount: (cb: (count: number) => void): Unsubscribe => onEvent('nudge:unreadCount', cb),
 
   testNotification: () => ipcRenderer.invoke('notifications:test'),
+
+  startStream: () => ipcRenderer.invoke('stream:start'),
+  stopStream: () => ipcRenderer.invoke('stream:stop'),
 };
 
 export type ElectronAPI = typeof api;

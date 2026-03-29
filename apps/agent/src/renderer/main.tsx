@@ -1,7 +1,14 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import type { ElectronAPI } from '../preload';
 import { App } from './App';
 import './globals.css';
+
+declare global {
+  interface Window {
+    api: ElectronAPI;
+  }
+}
 
 window.api.onNotificationSound(() => {
   window.api.getSettings().then((s: any) => {

@@ -25,6 +25,7 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^6.26.0",
+    "slippi-web-bridge": "file:../../../../src/slippi-web-bridge",
     "ws": "^8.20.0"
   },
   "devDependencies": {

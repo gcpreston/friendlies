@@ -686,6 +686,16 @@ export function Friends() {
               )}
             </div>
           </div>
+
+          <div>
+            <button onClick={() => window.api.startStream()}>
+              Start stream
+            </button>
+
+            <button onClick={() => window.api.stopStream()}>
+              Stop stream
+            </button>
+          </div>
         </div>
       )}
 
