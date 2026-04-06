@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { DisconnectReason } from 'slippi-web-bridge';
 
 type Unsubscribe = () => void;
 
@@ -105,6 +106,9 @@ const api = {
 
   startStream: () => ipcRenderer.invoke('stream:start'),
   stopStream: () => ipcRenderer.invoke('stream:stop'),
+  onSlippiConnected: (cb: (count: number) => void): Unsubscribe => onEvent('stream:slippiConnected', cb),
+  onRelayConnected: (cb: (count: number) => void): Unsubscribe => onEvent('stream:relayConnected', cb),
+  onStreamDisconnected: (cb: (reason: DisconnectReason) => void): Unsubscribe => onEvent('stream:disconnected', cb),
 };
 
 export type ElectronAPI = typeof api;

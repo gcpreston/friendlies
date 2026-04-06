@@ -13,7 +13,7 @@ import { getSettings, isSetupComplete, updateSettings, type AgentSettings } from
 import { supabase } from './supabase';
 import { checkForUpdates, downloadUpdate, quitAndInstall } from './updater';
 import { backfillRecentReplays } from './watcher';
-import { BridgeEvent, DisconnectReason } from 'slippi-web-bridge';
+import { BridgeEvent, DisconnectReason, RelayConnectionInfo } from 'slippi-web-bridge';
 
 const SLIPPI_API_NAME_TO_ID: Record<string, number> = {
   CAPTAIN_FALCON: 0, DONKEY_KONG: 1, FOX: 2, MR_GAME_AND_WATCH: 3,
@@ -1350,22 +1350,35 @@ export function registerIpcHandlers(
     return { status: service.getStatus(), active: service.isActive() };
   });
 
-  ipcMain.handle('stream:start', () => {
+  ipcMain.handle('stream:start', async () => {
     const bridge = getStreamService();
+
+    /*
     bridge.connectToRelayServer(STREAM_URL);
 
     bridge.on(BridgeEvent.SLIPPI_CONNECTED, () => {
       console.log('Stream connected to Slippi');
+      sendToRenderer('stream:slippiConnected');
     });
     bridge.on(BridgeEvent.RELAY_CONNECTED, (data) => {
-      const { bridge_id: bridgeId, stream_ids: [streamId] } = JSON.parse(data);
-      console.log(`Remote stream created, bridge ID: ${bridgeId}, stream ID: ${streamId}`)
+      const { bridge_id: bridgeId, stream_ids: [streamId] }: RelayConnectionInfo = JSON.parse(data);
+      console.log(`Remote stream created, bridge ID: ${bridgeId}, stream ID: ${streamId}`);
+      sendToRenderer('stream:relayConnected', { bridgeId, streamId });
     });
     bridge.on(BridgeEvent.DISCONNECTED, (reason: DisconnectReason) => {
-      console.log(`Stream disconnected, reason: ${reason}`)
+      console.log(`Stream disconnected, reason: ${reason}`);
+      sendToRenderer('stream:disconnected', reason);
     });
+    */
 
-    return true;
+    bridge.onDisconnect(reason => sendToRenderer('stream:disconnected', reason));
+
+    return await bridge.connect(STREAM_URL); // slippi params default; reconnect handled by lib
+    // possible results (enum):
+    // - success: both slippi and bridge connected, gives bridgeId and streamId (and reconnectToken?)
+    // - slippi connection failure: timeout
+    // - sm connection failure: timeout, failure, etc
+    // - some kind of error/catch-all maybe
   });
 
   ipcMain.handle('stream:stop', () => {

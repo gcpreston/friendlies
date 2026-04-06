@@ -99,6 +99,10 @@ export function Friends() {
 
   const [nudgeSent, setNudgeSent] = useState<Record<string, string>>({});
 
+  // In my ideal world, this is like a Rust struct with params, where I can say Connected(streamId), Disconnected(reason), FailedToConnect(reason), etc
+  const [streamId, setStreamId] = useState<string | null>(null);
+  const [streamError, setStreamError] = useState<string | null>(null);
+
   const HIDDEN_CHARACTERS = new Set([23]);
   const CHAR_OPTIONS = Object.keys(CHARACTER_MAP).map(Number).filter((id) => !HIDDEN_CHARACTERS.has(id)).sort((a, b) => CHARACTER_MAP[a].localeCompare(CHARACTER_MAP[b]));
 
@@ -503,6 +507,41 @@ export function Friends() {
     await window.api.updateCharacters({ secondaryCharacter: charId });
   }
 
+  async function startStream() {
+    console.log("starting stream...");
+    const connectResult = await window.api.startStream();
+    console.log("started stream", connectResult);
+
+    /*
+    if (connectResult.isSuccess()) {
+      const { streamId } = connectResult.success();
+      setStreamId(streamId);
+    } else {
+      setStreamError(connectResult.error());
+    }
+    */
+
+    // TODO: error case
+    const newStreamId = connectResult.stream_ids[0];
+    setStreamId(newStreamId);
+    console.log("set stream ID:", newStreamId);
+  }
+
+  async function stopStream() {
+    const stopResult = await window.api.stopStream();
+
+    /*
+    if (!stopResult.isSuccess()) {
+      setStreamError(stopResult.error());
+    }
+
+    setStreamId(null);
+    */
+
+    // TODO: error case
+    setStreamId(null);
+  }
+
   // DC admin gate removed — feature well tested
   // const isDirectConnectUser = myIdentity?.connectCode === 'SMOK#1' || myIdentity?.connectCode === 'BF#0';
   const visibleSentInvites = sentInvites.filter((inv) => !inv.myOpened);
@@ -688,13 +727,22 @@ export function Friends() {
           </div>
 
           <div>
-            <button onClick={() => window.api.startStream()}>
-              Start stream
-            </button>
+            {streamId === null ?
+              <button onClick={() => startStream()}>
+                Start stream
+              </button>
+              :
+              <>
+                <div>Stream ID: {streamId}</div>
+                <div>
+                  <button onClick={() => stopStream()}>
+                    Stop stream
+                  </button>
+                </div>
+              </>
+            }
 
-            <button onClick={() => window.api.stopStream()}>
-              Stop stream
-            </button>
+            {streamError !== null && <div>Stream error: {streamError}</div>}
           </div>
         </div>
       )}
