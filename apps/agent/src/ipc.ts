@@ -7,13 +7,12 @@ import { getStreamService, STREAM_URL } from './stream';
 import { getIdentity, verifyIdentity } from './identity';
 import { getCachedGeo } from './geo-cache';
 import { resolvePresenceRow } from './presence-logic';
-import { getConnectionType, getCurrentStatus, getOnlineUsers, getPresenceStats, getStatusPreset, isLookingToPlay, onLocalStatusChange, onPresenceSync, setHideConnectionType, setHideOnlineStatus, setStatusPreset, toggleLookingToPlay } from './presence';
+import { getConnectionType, getCurrentStatus, getOnlineUsers, getPresenceStats, getStatusPreset, isLookingToPlay, onLocalStatusChange, onPresenceSync, setHideConnectionType, setHideOnlineStatus, setStatusPreset, toggleLookingToPlay, setStream } from './presence';
 import { showTestNotification } from './notifications';
 import { getSettings, isSetupComplete, updateSettings, type AgentSettings } from './settings';
 import { supabase } from './supabase';
 import { checkForUpdates, downloadUpdate, quitAndInstall } from './updater';
 import { backfillRecentReplays } from './watcher';
-import { BridgeEvent, DisconnectReason, RelayConnectionInfo } from 'slippi-web-bridge';
 
 const SLIPPI_API_NAME_TO_ID: Record<string, number> = {
   CAPTAIN_FALCON: 0, DONKEY_KONG: 1, FOX: 2, MR_GAME_AND_WATCH: 3,
@@ -1371,14 +1370,23 @@ export function registerIpcHandlers(
     });
     */
 
-    bridge.onDisconnect(reason => sendToRenderer('stream:disconnected', reason));
+    bridge.onDisconnect(reason => {
+      sendToRenderer('stream:disconnected', reason);
+      setStream(null);
+    });
 
-    return await bridge.connect(STREAM_URL); // slippi params default; reconnect handled by lib
+    const connectResult = await bridge.connect(STREAM_URL); // slippi params default; reconnect handled by lib
     // possible results (enum):
     // - success: both slippi and bridge connected, gives bridgeId and streamId (and reconnectToken?)
     // - slippi connection failure: timeout
     // - sm connection failure: timeout, failure, etc
     // - some kind of error/catch-all maybe
+
+    if (typeof connectResult === 'object') {
+      setStream(connectResult.stream_ids[0]);
+    }
+
+    return connectResult;
   });
 
   ipcMain.handle('stream:stop', () => {

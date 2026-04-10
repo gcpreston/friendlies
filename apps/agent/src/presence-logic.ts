@@ -22,14 +22,17 @@ export function isDirty(
   status: PresenceStatus,
   character: number | null,
   opponentCode: string | null,
+  streamId: string | null,
   lastStatus: PresenceStatus,
   lastCharacter: number | null,
   lastOpponentCode: string | null,
+  lastStreamId: string | null,
 ): boolean {
   return (
     status !== lastStatus ||
     character !== lastCharacter ||
-    opponentCode !== lastOpponentCode
+    opponentCode !== lastOpponentCode ||
+    streamId !== lastStreamId
   );
 }
 
