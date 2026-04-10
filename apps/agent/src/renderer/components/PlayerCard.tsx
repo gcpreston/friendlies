@@ -48,9 +48,10 @@ interface PlayerCardProps {
   addState?: 'pending' | 'adding' | 'friends' | null;
   removeLabel?: string;
   onUnsend?: () => void;
+  streamId: string | null;
 }
 
-export function PlayerCard({ player, showStatus = true, expandable = true, onClick, onBlock, onRemove, onInvite, inviteDisabled, inviteState, nudgeOptions, onNudge, nudgeState, onAdd, addDisabled, addState, removeLabel, onUnsend }: PlayerCardProps) {
+export function PlayerCard({ player, showStatus = true, expandable = true, onClick, onBlock, onRemove, onInvite, inviteDisabled, inviteState, nudgeOptions, onNudge, nudgeState, onAdd, addDisabled, addState, removeLabel, onUnsend, streamId }: PlayerCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [nudgePickerOpen, setNudgePickerOpen] = useState(false);
   const hasAvatar = !!player.avatarUrl;
@@ -157,6 +158,9 @@ export function PlayerCard({ player, showStatus = true, expandable = true, onCli
               Invite
             </button>
           )
+        )}
+        {streamId && (
+          <a href={`http://localhost:4000/?watch=${streamId}`} target='_blank'>Watch stream</a>
         )}
         {addState === 'friends' ? (
           <span className="shrink-0 rounded-lg border border-[#21BA45]/20 bg-[#21BA45]/5 px-3 py-1 text-[11px] font-medium text-[#21BA45]/60">
