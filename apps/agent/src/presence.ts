@@ -140,6 +140,7 @@ let subscribeGeneration = 0;
 let lastPushedStatus: PresenceStatus = 'offline';
 let lastPushedCharacter: number | null = null;
 let lastPushedOpponentCode: string | null = null;
+let lastPushedStreamId: number | null = null;
 let lastDbWriteTime = 0;
 const DB_HEARTBEAT_INTERVAL = 150_000;
 
@@ -243,6 +244,10 @@ export async function toggleLookingToPlay(): Promise<boolean> {
     await pushPresence(currentStatus, loopConnectCode, loopDisplayName, loopUserId);
   }
   return lookingToPlay;
+}
+
+export async function setStream(streamId: number | null): Promise<void> {
+  await pushPresence(currentStatus, loopConnectCode, loopDisplayName, loopUserId, streamId);
 }
 
 export function getStatusPreset(): string | null {
@@ -362,13 +367,18 @@ async function pushPresence(
   connectCode: string,
   displayName: string,
   userId: string,
+  streamId?: number | null
 ): Promise<void> {
   try {
     const opponent = status === 'in-game' ? getRecentOpponent() : null;
     const character = status === 'in-game' ? lastCharacterId : null;
     const opCode = opponent?.code ?? null;
 
-    const dirty = _isDirty(status, character, opCode, lastPushedStatus, lastPushedCharacter, lastPushedOpponentCode);
+    if (streamId === undefined) {
+      streamId = lastPushedStreamId;
+    }
+
+    const dirty = _isDirty(status, character, opCode, streamId, lastPushedStatus, lastPushedCharacter, lastPushedOpponentCode, lastPushedStreamId);
     const now = Date.now();
     const shouldWriteDb = _shouldWriteDb(dirty, lastDbWriteTime, DB_HEARTBEAT_INTERVAL, now);
 
@@ -388,6 +398,7 @@ async function pushPresence(
         looking_to_play_since: lfgActive ? lookingToPlaySince : null,
         status_preset: lfgActive ? statusPreset : null,
         connection_type: hideConnectionType ? null : currentConnectionType,
+        stream_id: streamId,
         updated_at: new Date().toISOString(),
       };
 
@@ -412,6 +423,7 @@ async function pushPresence(
                 status,
                 current_character: lastCharacterId,
                 updated_at: new Date().toISOString(),
+                stream_id: streamId,
               },
               { onConflict: 'user_id' },
             );
@@ -441,6 +453,7 @@ async function pushPresence(
     lastPushedStatus = status;
     lastPushedCharacter = character;
     lastPushedOpponentCode = opCode;
+    lastPushedStreamId = streamId;
 
     if (status === 'offline') {
       if (presenceChannel && subscribed) {
