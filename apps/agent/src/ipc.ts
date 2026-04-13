@@ -3,10 +3,11 @@ import { BrowserWindow, app, clipboard, dialog, ipcMain, shell } from 'electron'
 import { getCurrentUser, handleAuthCallback, isAuthenticated, logout, startAuthFlow, startLocalAuthServer } from './auth';
 import { PRESENCE_STALE_THRESHOLD } from './config';
 import { getDirectConnectService } from './direct-connect';
+import { startStream, stopStream } from './stream';
 import { getIdentity, verifyIdentity } from './identity';
 import { getCachedGeo } from './geo-cache';
 import { resolvePresenceRow } from './presence-logic';
-import { getConnectionType, getCurrentStatus, getOnlineUsers, getPresenceStats, getStatusPreset, isLookingToPlay, onLocalStatusChange, onPresenceSync, setHideConnectionType, setHideOnlineStatus, setStatusPreset, toggleLookingToPlay } from './presence';
+import { getConnectionType, getCurrentStatus, getOnlineUsers, getPresenceStats, getStatusPreset, isLookingToPlay, onLocalStatusChange, onPresenceSync, setHideConnectionType, setHideOnlineStatus, setStatusPreset, toggleLookingToPlay, setStream } from './presence';
 import { showTestNotification } from './notifications';
 import { getSettings, isSetupComplete, updateSettings, type AgentSettings } from './settings';
 import { supabase } from './supabase';
@@ -1346,5 +1347,18 @@ export function registerIpcHandlers(
   ipcMain.handle('directConnect:status', () => {
     const service = getDirectConnectService();
     return { status: service.getStatus(), active: service.isActive() };
+  });
+
+  ipcMain.handle('stream:start', async () => {
+    try {
+      return { streamId: await startStream() };
+    } catch (e: any) {
+      return { error: e.message };
+    }
+  });
+
+  ipcMain.handle('stream:stop', () => {
+    stopStream();
+    return { ok: true };
   });
 }
