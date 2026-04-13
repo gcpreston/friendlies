@@ -22,11 +22,11 @@ export function isDirty(
   status: PresenceStatus,
   character: number | null,
   opponentCode: string | null,
-  streamId: string | null,
+  streamId: number | null,
   lastStatus: PresenceStatus,
   lastCharacter: number | null,
   lastOpponentCode: string | null,
-  lastStreamId: string | null,
+  lastStreamId: number | null,
 ): boolean {
   return (
     status !== lastStatus ||

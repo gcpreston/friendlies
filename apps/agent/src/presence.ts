@@ -140,7 +140,7 @@ let subscribeGeneration = 0;
 let lastPushedStatus: PresenceStatus = 'offline';
 let lastPushedCharacter: number | null = null;
 let lastPushedOpponentCode: string | null = null;
-let lastPushedStreamId: string | null = null;
+let lastPushedStreamId: number | null = null;
 let lastDbWriteTime = 0;
 const DB_HEARTBEAT_INTERVAL = 150_000;
 
@@ -246,7 +246,7 @@ export async function toggleLookingToPlay(): Promise<boolean> {
   return lookingToPlay;
 }
 
-export async function setStream(streamId: string | null): Promise<void> {
+export async function setStream(streamId: number | null): Promise<void> {
   await pushPresence(currentStatus, loopConnectCode, loopDisplayName, loopUserId, streamId);
 }
 
@@ -368,7 +368,7 @@ async function pushPresence(
   connectCode: string,
   displayName: string,
   userId: string,
-  streamId?: string | null
+  streamId?: number | null
 ): Promise<void> {
   try {
     const opponent = status === 'in-game' ? getRecentOpponent() : null;

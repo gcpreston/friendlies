@@ -1352,41 +1352,19 @@ export function registerIpcHandlers(
   ipcMain.handle('stream:start', async () => {
     const bridge = getStreamService();
 
-    /*
-    bridge.connectToRelayServer(STREAM_URL);
-
-    bridge.on(BridgeEvent.SLIPPI_CONNECTED, () => {
-      console.log('Stream connected to Slippi');
-      sendToRenderer('stream:slippiConnected');
-    });
-    bridge.on(BridgeEvent.RELAY_CONNECTED, (data) => {
-      const { bridge_id: bridgeId, stream_ids: [streamId] }: RelayConnectionInfo = JSON.parse(data);
-      console.log(`Remote stream created, bridge ID: ${bridgeId}, stream ID: ${streamId}`);
-      sendToRenderer('stream:relayConnected', { bridgeId, streamId });
-    });
-    bridge.on(BridgeEvent.DISCONNECTED, (reason: DisconnectReason) => {
-      console.log(`Stream disconnected, reason: ${reason}`);
-      sendToRenderer('stream:disconnected', reason);
-    });
-    */
 
     bridge.onDisconnect(reason => {
       sendToRenderer('stream:disconnected', reason);
       setStream(null);
     });
 
-    const connectResult = await bridge.connect(STREAM_URL); // slippi params default; reconnect handled by lib
-    // possible results (enum):
-    // - success: both slippi and bridge connected, gives bridgeId and streamId (and reconnectToken?)
-    // - slippi connection failure: timeout
-    // - sm connection failure: timeout, failure, etc
-    // - some kind of error/catch-all maybe
+    const { data, error } = await bridge.connect(STREAM_URL); // slippi params default; reconnect handled by lib
 
-    if (typeof connectResult === 'object') {
-      setStream(connectResult.stream_ids[0]);
+    if (!error) {
+      setStream(data!.streamIds[0]);
     }
 
-    return connectResult;
+    return { data, error };
   });
 
   ipcMain.handle('stream:stop', () => {

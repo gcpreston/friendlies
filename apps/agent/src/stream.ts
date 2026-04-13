@@ -1,4 +1,4 @@
-import { BridgeWrapper as Bridge } from 'slippi-web-bridge';
+import { Bridge } from 'slippi-web-bridge';
 
 let streamService: Bridge | null = null;
 
