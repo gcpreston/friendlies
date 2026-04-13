@@ -99,6 +99,9 @@ export function Friends() {
 
   const [nudgeSent, setNudgeSent] = useState<Record<string, string>>({});
 
+  const [streamId, setStreamId] = useState<number | null>(null);
+  const [streamError, setStreamError] = useState<string | null>(null);
+
   const HIDDEN_CHARACTERS = new Set([23]);
   const CHAR_OPTIONS = Object.keys(CHARACTER_MAP).map(Number).filter((id) => !HIDDEN_CHARACTERS.has(id)).sort((a, b) => CHARACTER_MAP[a].localeCompare(CHARACTER_MAP[b]));
 
@@ -187,6 +190,10 @@ export function Friends() {
       loadSentInvites();
     });
 
+    const unsubStreamDisconnected = window.api.onStreamDisconnected(() => {
+      setStreamId(null);
+    });
+
     const dbPoll = setInterval(() => {
       if (document.hidden) return;
       pollFriendStatuses();
@@ -213,7 +220,7 @@ export function Friends() {
       }
     };
     document.addEventListener('visibilitychange', onVisible);
-    return () => { unsub(); unsubStatus(); unsubDc(); unsubInvRefresh(); clearInterval(dbPoll); document.removeEventListener('visibilitychange', onVisible); };
+    return () => { unsub(); unsubStatus(); unsubDc(); unsubInvRefresh(); unsubStreamDisconnected(); clearInterval(dbPoll); document.removeEventListener('visibilitychange', onVisible); };
   }, []);
 
   async function pollFriendStatuses() {
@@ -503,6 +510,21 @@ export function Friends() {
     await window.api.updateCharacters({ secondaryCharacter: charId });
   }
 
+  async function toggleStream() {
+    if (streamId) {
+      await window.api.stopStream();
+    } else {
+      const { data, error } = await window.api.startStream();
+
+      if (error) {
+        setStreamError(error);
+      } else {
+        const newStreamId = data.streamIds[0];
+        setStreamId(newStreamId);
+      }
+    }
+  }
+
   // DC admin gate removed — feature well tested
   // const isDirectConnectUser = myIdentity?.connectCode === 'SMOK#1' || myIdentity?.connectCode === 'BF#0';
   const visibleSentInvites = sentInvites.filter((inv) => !inv.myOpened);
@@ -635,6 +657,15 @@ export function Friends() {
               >
                 {lfg ? '🎮' : '🎮 Looking to play?'}
               </button>
+
+              <button
+                onClick={toggleStream}
+                className='rounded-lg px-3 py-1.5 text-xs font-medium transition-all border border-[#2a2a2a] bg-[#1a1a1a] text-gray-400 hover:text-white hover:bg-[#222]'
+              >
+                {streamId ? 'Stop stream' : 'Start stream'}
+              </button>
+
+              {streamError !== null && <div>Stream error: {streamError}</div>}
             </div>
           </div>
           <div className="flex items-center gap-6 mt-3 pt-3 border-t border-[#2a2a2a]">
@@ -685,6 +716,12 @@ export function Friends() {
                 </>
               )}
             </div>
+
+            {streamId &&
+              <span className='text-md text-gray-500'>
+                Streaming at: {`http://localhost:4000?watch=${streamId}`}
+              </span>
+            }
           </div>
         </div>
       )}
