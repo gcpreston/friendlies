@@ -7,8 +7,7 @@ const baseLinks = [
   { to: '/ggs', label: 'GGs', icon: '✦' },
   { to: '/opponents', label: 'Opponents', icon: '⚔' },
   { to: '/leaderboard', label: 'Leaderboard', icon: '▲' },
-  { to: '/settings', label: 'Settings', icon: '⚙' },
-  { to: '/spectate', label: 'Spectate', icon: 's' }
+  { to: '/settings', label: 'Settings', icon: '⚙' }
 ];
 
 const SHARE_BLURB =

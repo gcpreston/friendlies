@@ -50,7 +50,7 @@ function SkeletonCard() {
 export function Friends() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
-  const [onlineMap, setOnlineMap] = useState<Record<string, { status: string; opponentCode?: string; currentCharacter?: number | null; playingSince?: string; lookingToPlay?: boolean; statusPreset?: string | null; connectionType?: 'wifi' | 'ethernet' | null }>>({});
+  const [onlineMap, setOnlineMap] = useState<Record<string, { status: string; opponentCode?: string; currentCharacter?: number | null; playingSince?: string; lookingToPlay?: boolean; statusPreset?: string | null; connectionType?: 'wifi' | 'ethernet' | null, streamId?: number }>>({});
   const [search, setSearch] = useState('');
   const [addCode, setAddCode] = useState('');
   const [addError, setAddError] = useState('');
@@ -295,6 +295,7 @@ export function Friends() {
         lookingToPlay: presence?.lookingToPlay ?? false,
         statusPreset: presence?.statusPreset ?? null,
         connectionType: presence?.connectionType ?? null,
+        streamId: presence?.streamId ?? null
       };
     });
   }, [friends, onlineMap]);
@@ -406,6 +407,12 @@ export function Friends() {
       delete next[connectCode];
       return next;
     }), 3000);
+  }
+
+  function handleSpectate(streamId: number | null) {
+    if (streamId) {
+      // TODO: navigate and watch stream
+    }
   }
 
   async function handleAcceptInvite(inviteId: string) {
@@ -973,6 +980,7 @@ export function Friends() {
                 region: f.region,
                 rating: f.rating,
                 characterId: f.characterId,
+                streamId: f.streamId
               }}
               showStatus={false}
               onClick={() => handleCopy(f.connectCode)}
@@ -1085,6 +1093,7 @@ export function Friends() {
                 lookingToPlay: f.lookingToPlay,
                 statusPreset: disableStatuses ? undefined : (f.statusPreset ?? undefined),
                 connectionType: f.connectionType ?? undefined,
+                streamId: f.streamId
               }}
               onClick={() => handleCopy(f.connectCode)}
               onBlock={() => setConfirmBlock({ code: f.connectCode })}

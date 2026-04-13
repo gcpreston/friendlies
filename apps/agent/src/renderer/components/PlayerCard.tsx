@@ -4,6 +4,7 @@ import { OnlineIndicator } from './OnlineIndicator';
 import { RankBadge } from './RankBadge';
 import { CharacterIcon } from './CharacterIcon';
 import { PlayerStatsPanel } from './PlayerStatsPanel';
+import { Spectate } from './Spectate';
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
@@ -31,6 +32,7 @@ interface PlayerCardProps {
     lookingToPlay?: boolean;
     statusPreset?: string | null;
     connectionType?: 'wifi' | 'ethernet' | null;
+    streamId: number | null
   };
   showStatus?: boolean;
   expandable?: boolean;
@@ -48,12 +50,12 @@ interface PlayerCardProps {
   addState?: 'pending' | 'adding' | 'friends' | null;
   removeLabel?: string;
   onUnsend?: () => void;
-  streamId: string | null;
 }
 
-export function PlayerCard({ player, showStatus = true, expandable = true, onClick, onBlock, onRemove, onInvite, inviteDisabled, inviteState, nudgeOptions, onNudge, nudgeState, onAdd, addDisabled, addState, removeLabel, onUnsend, streamId }: PlayerCardProps) {
+export function PlayerCard({ player, showStatus = true, expandable = true, onClick, onBlock, onRemove, onInvite, inviteDisabled, inviteState, nudgeOptions, onNudge, nudgeState, onAdd, addDisabled, addState, removeLabel, onUnsend }: PlayerCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [nudgePickerOpen, setNudgePickerOpen] = useState(false);
+  const [spectateStreamId, setSpectateStreamId] = useState<number | null>(null);
   const hasAvatar = !!player.avatarUrl;
 
   function handleClick() {
@@ -159,8 +161,8 @@ export function PlayerCard({ player, showStatus = true, expandable = true, onCli
             </button>
           )
         )}
-        {streamId && (
-          <a href={`http://localhost:4000/?watch=${streamId}`} target='_blank'>Watch stream</a>
+        {player.streamId && (
+          <a href={`http://localhost:4000/?watch=${player.streamId}`} target='_blank'>Watch stream</a>
         )}
         {addState === 'friends' ? (
           <span className="shrink-0 rounded-lg border border-[#21BA45]/20 bg-[#21BA45]/5 px-3 py-1 text-[11px] font-medium text-[#21BA45]/60">
@@ -235,6 +237,18 @@ export function PlayerCard({ player, showStatus = true, expandable = true, onCli
                   )}
                 </div>
               )}
+              <button
+                onClick={() => setSpectateStreamId(/* player.streamId */93353042)}
+                className="rounded-md bg-amber-500/10 px-2 py-1 text-[10px] font-medium text-amber-400 hover:bg-amber-500/20 transition-colors whitespace-nowrap"
+              >
+                Spectate
+              </button>
+              <button
+                onClick={() => setSpectateStreamId(null)}
+                className="rounded-md bg-amber-500/10 px-2 py-1 text-[10px] font-medium text-amber-400 hover:bg-amber-500/20 transition-colors whitespace-nowrap"
+              >
+                Stop spectating
+              </button>
               <div className="flex-1" />
               {onRemove && (
                 <button
@@ -254,6 +268,7 @@ export function PlayerCard({ player, showStatus = true, expandable = true, onCli
               )}
             </div>
           )}
+          {spectateStreamId && <Spectate streamId={spectateStreamId} />}
         </div>
       )}
     </div>

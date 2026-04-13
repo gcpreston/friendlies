@@ -8,7 +8,6 @@ import { Opponents } from './pages/Opponents';
 import { Settings } from './pages/Settings';
 import { Discover } from './pages/Discover';
 import { Leaderboard } from './pages/Leaderboard';
-import { Spectate } from './pages/Spectate';
 import { UpdateBanner } from './components/UpdateBanner';
 
 type BootState =
@@ -444,7 +443,6 @@ export function App() {
           <Route path="/opponents" element={<Opponents />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/spectate" element={<Spectate />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
