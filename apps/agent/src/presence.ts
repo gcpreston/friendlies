@@ -101,6 +101,7 @@ export interface OnlineUser {
   opponentCode: string | null;
   playingSince: string | null;
   connectionType: ConnectionType;
+  streamId: number | null;
   updatedAt: string;
 }
 
@@ -325,6 +326,7 @@ function extractOnlineUsers(): OnlineUser[] {
           opponentCode: e.opponentCode ?? null,
           playingSince: e.playingSince ?? null,
           connectionType: e.connectionType ?? null,
+          streamId: e.streamId ?? null,
           updatedAt: e.updatedAt || '',
         });
       }

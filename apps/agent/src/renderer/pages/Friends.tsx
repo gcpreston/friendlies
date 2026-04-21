@@ -50,7 +50,7 @@ function SkeletonCard() {
 export function Friends() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
-  const [onlineMap, setOnlineMap] = useState<Record<string, { status: string; opponentCode?: string; currentCharacter?: number | null; playingSince?: string; lookingToPlay?: boolean; statusPreset?: string | null; connectionType?: 'wifi' | 'ethernet' | null }>>({});
+  const [onlineMap, setOnlineMap] = useState<Record<string, { status: string; opponentCode?: string; currentCharacter?: number | null; playingSince?: string; lookingToPlay?: boolean; statusPreset?: string | null; connectionType?: 'wifi' | 'ethernet' | null, streamId?: number | null }>>({});
   const [search, setSearch] = useState('');
   const [addCode, setAddCode] = useState('');
   const [addError, setAddError] = useState('');
@@ -160,6 +160,7 @@ export function Friends() {
             lookingToPlay: prev[u.connectCode]?.lookingToPlay,
             statusPreset: prev[u.connectCode]?.statusPreset,
             connectionType: u.connectionType ?? prev[u.connectCode]?.connectionType ?? null,
+            streamId: u.streamId ?? null,
           };
         });
         return next;
@@ -291,6 +292,7 @@ export function Friends() {
         lookingToPlay: presence?.lookingToPlay ?? false,
         statusPreset: presence?.statusPreset ?? null,
         connectionType: presence?.connectionType ?? null,
+        streamId: presence?.streamId ?? null,
       };
     });
   }, [friends, onlineMap]);
@@ -1027,6 +1029,7 @@ export function Friends() {
                 lookingToPlay: f.lookingToPlay,
                 statusPreset: disableStatuses ? undefined : (f.statusPreset ?? undefined),
                 connectionType: f.connectionType ?? undefined,
+                streamId: f.streamId,
               }}
               onClick={() => handleCopy(f.connectCode)}
               onBlock={() => setConfirmBlock({ code: f.connectCode })}

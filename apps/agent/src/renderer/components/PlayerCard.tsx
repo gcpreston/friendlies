@@ -31,6 +31,7 @@ interface PlayerCardProps {
     lookingToPlay?: boolean;
     statusPreset?: string | null;
     connectionType?: 'wifi' | 'ethernet' | null;
+    streamId?: number | null;
   };
   showStatus?: boolean;
   expandable?: boolean;
